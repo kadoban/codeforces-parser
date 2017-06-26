@@ -20,20 +20,6 @@ import argparse
 ###########################
 # User modifiable constants
 ###########################
-language_params = {
-        'c++14' : {
-            'TEMPLATE'    : 'main.cc',
-            'DEBUG_FLAGS' : '-DDEBUG',
-            'COMPILE_CMD' : 'g++ -g -std=c++14 -Wall $DBG',
-            'RUN_CMD'     : './a.out'
-            },
-        'go'    : {
-            'TEMPLATE'    : 'main.go',
-            'COMPILE_CMD' : 'go build $DBG -o a.out',
-            'DEBUG_FLAGS' : '''"-ldflags '-X=main.DEBUG=Y'"''',
-            'RUN_CMD'     : './a.out'
-            }
-        }
 
 SAMPLE_INPUT='input'
 SAMPLE_OUTPUT='output'
@@ -149,76 +135,14 @@ def parse_contest(contest):
     parser.feed(html.decode('utf-8'))
     return parser
 
-# Generates the test script.
-def generate_test_script(folder, language, num_tests, problem):
-    param = language_params[language]
-
-    with open(folder + 'test.sh', 'w') as test:
-        test.write(
-            ('#!/bin/bash\n'
-            'DBG=""\n'
-            'while getopts ":d" opt; do\n'
-            '  case $opt in\n'
-            '    d)\n'
-            '      echo "-d was selected; compiling in DEBUG mode!" >&2\n'
-            '      DBG=' + param["DEBUG_FLAGS"] +'\n'
-            '      ;;\n'
-            '    \?)\n'
-            '      echo "Invalid option: -$OPTARG" >&2\n'
-            '      ;;\n'
-            '  esac\n'
-            'done\n'
-            '\n'
-            'if ! ' + param["COMPILE_CMD"] +' {0}.{1}; then\n'
-            '    exit\n'
-            'fi\n'
-            'INPUT_NAME='+SAMPLE_INPUT+'\n'
-            'OUTPUT_NAME='+SAMPLE_OUTPUT+'\n'
-            'MY_NAME='+MY_OUTPUT+'\n'
-            'rm -R $MY_NAME* &>/dev/null\n').format(problem, param["TEMPLATE"].split('.')[1]))
-        test.write(
-            'for test_file in $INPUT_NAME*\n'
-            'do\n'
-            '    i=$((${{#INPUT_NAME}}))\n'
-            '    test_case=${{test_file:$i}}\n'
-            '    if ! {5} {run_cmd} < $INPUT_NAME$test_case > $MY_NAME$test_case; then\n'
-            '        echo {1}{4}Sample test \#$test_case: Runtime Error{2} {6}\n'
-            '        echo ========================================\n'
-            '        echo Sample Input \#$test_case\n'
-            '        cat $INPUT_NAME$test_case\n'
-            '    else\n'
-            '        if diff --brief --ignore-trailing-space $MY_NAME$test_case $OUTPUT_NAME$test_case; then\n'
-            '            echo {1}{3}Sample test \#$test_case: Accepted{2} {6}\n'
-            '        else\n'
-            '            echo {1}{4}Sample test \#$test_case: Wrong Answer{2} {6}\n'
-            '            echo ========================================\n'
-            '            echo Sample Input \#$test_case\n'
-            '            cat $INPUT_NAME$test_case\n'
-            '            echo ========================================\n'
-            '            echo Sample Output \#$test_case\n'
-            '            cat $OUTPUT_NAME$test_case\n'
-            '            echo ========================================\n'
-            '            echo My Output \#$test_case\n'
-            '            cat $MY_NAME$test_case\n'
-            '            echo ========================================\n'
-            '        fi\n'
-            '    fi\n'
-            'done\n'
-            .format(num_tests, BOLD, NORM, GREEN_F, RED_F, TIME_CMD, TIME_AP, run_cmd=param["RUN_CMD"]))
-    call(['chmod', '+x', folder + 'test.sh'])
-
-
 # Main function.
 def main():
     print (VERSION)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--language', '-l', default="c++14", help="The programming language you want to use "
-            "(c++14, go)")
     parser.add_argument('contest', help="")
     args = parser.parse_args()
 
     contest = args.contest
-    language = args.language
 
     # Find contest and problems.
     print ('Parsing contest %s for language %s, please wait...' % (contest, language))
@@ -227,19 +151,14 @@ def main():
     print ('Found %d problems!' % (len(content.problems)))
 
     # Find problems and test cases.
-    TEMPLATE = language_params[language]["TEMPLATE"]
     for index, problem in enumerate(content.problems):
         print ('Downloading Problem %s: %s...' % (problem, content.problem_names[index]))
-        folder = '%s-%s/%s/' % (contest, language, problem)
-        call(['mkdir', '-p', folder])
-        call(['cp', '-n', TEMPLATE, '%s/%s.%s' % (folder, problem, TEMPLATE.split('.')[1])])
+        #folder = '%s/%s/' % (contest, problem)
+        #call(['mkdir', '-p', folder])
+        #call(['cp', '-n', TEMPLATE, '%s/%s.%s' % (folder, problem, TEMPLATE.split('.')[1])])
         num_tests = parse_problem(folder, contest, problem)
         print('%d sample test(s) found.' % num_tests)
-        generate_test_script(folder, language, num_tests, problem)
         print ('========================================')
-
-    print ('Use ./test.sh to run sample tests in each directory.')
-
 
 if __name__ == '__main__':
     main()
