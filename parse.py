@@ -139,9 +139,12 @@ def main():
     print (VERSION)
     parser = argparse.ArgumentParser()
     parser.add_argument('contest', help="")
+    parser.add_argument('--start-commit', '-b', default="master", help="The git"
+            "commitish to start from")
     args = parser.parse_args()
 
     contest = args.contest
+    branch = args.start_commit
 
     # Find contest and problems.
     print ('Parsing contest %s for language %s, please wait...' % (contest, language))
