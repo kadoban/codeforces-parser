@@ -23,7 +23,6 @@ import argparse
 
 SAMPLE_INPUT='input'
 SAMPLE_OUTPUT='output'
-MY_OUTPUT='my_output'
 
 # Do not modify these!
 VERSION='Gitified CodeForces Parser v1.5.2: https://github.com/kadoban/codeforces-parser'
