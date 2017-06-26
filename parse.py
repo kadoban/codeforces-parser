@@ -118,7 +118,7 @@ class CodeforcesContestParser(HTMLParser):
             self.problem_name += data
 
 # Parses each problem page.
-def parse_problem(folder, contest, problem):
+def parse_problem(contest, problem):
     url = 'http://codeforces.com/contest/%s/problem/%s' % (contest, problem)
     html = urlopen(url).read()
     parser = CodeforcesProblemParser()
@@ -147,7 +147,7 @@ def main():
     start_commit = args.start_commit
 
     # Find contest and problems.
-    print ('Parsing contest %s for language %s, please wait...' % (contest, language))
+    print ('Parsing contest %s, please wait...' % (contest))
     content = parse_contest(contest)
     print (BOLD+GREEN_F+'*** Round name: '+content.name+' ***'+NORM)
     print ('Found %d problems!' % (len(content.problems)))
@@ -156,7 +156,7 @@ def main():
     # Find problems and test cases.
     for index, problem in enumerate(content.problems):
         print ('Downloading Problem %s: %s...' % (problem, content.problem_names[index]))
-        branch = 'cf%s/%s/' % (contest, problem)
+        branch = 'cf%s/%s' % (contest, problem)
         if first is None:
             first = branch
         call(['git', 'checkout', '-b', branch, start_commit])
