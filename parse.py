@@ -144,23 +144,31 @@ def main():
     args = parser.parse_args()
 
     contest = args.contest
-    branch = args.start_commit
+    start_commit = args.start_commit
 
     # Find contest and problems.
     print ('Parsing contest %s for language %s, please wait...' % (contest, language))
     content = parse_contest(contest)
     print (BOLD+GREEN_F+'*** Round name: '+content.name+' ***'+NORM)
     print ('Found %d problems!' % (len(content.problems)))
+    first = None
 
     # Find problems and test cases.
     for index, problem in enumerate(content.problems):
         print ('Downloading Problem %s: %s...' % (problem, content.problem_names[index]))
-        #folder = '%s/%s/' % (contest, problem)
+        branch = 'cf%s/%s/' % (contest, problem)
+        if first is None:
+            first = branch
+        call(['git', 'checkout', '-b', branch, start_commit])
         #call(['mkdir', '-p', folder])
         #call(['cp', '-n', TEMPLATE, '%s/%s.%s' % (folder, problem, TEMPLATE.split('.')[1])])
         num_tests = parse_problem(contest, problem)
+        call(['git', 'add', '.'])
+        call(['git', 'commit', '-m', 'samples fetched'])
         print('%d sample test(s) found.' % num_tests)
         print ('========================================')
+    if first is not None:
+        call(['git', 'checkout', first])
 
 if __name__ == '__main__':
     main()
