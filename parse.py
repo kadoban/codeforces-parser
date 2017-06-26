@@ -160,8 +160,6 @@ def main():
         if first is None:
             first = branch
         call(['git', 'checkout', '-b', branch, start_commit])
-        #call(['mkdir', '-p', folder])
-        #call(['cp', '-n', TEMPLATE, '%s/%s.%s' % (folder, problem, TEMPLATE.split('.')[1])])
         num_tests = parse_problem(contest, problem)
         call(['git', 'add', '.'])
         call(['git', 'commit', '-m', 'samples fetched'])
