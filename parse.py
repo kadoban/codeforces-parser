@@ -37,9 +37,8 @@ TIME_AP='`cat time.out`'
 # Problems parser.
 class CodeforcesProblemParser(HTMLParser):
 
-    def __init__(self, folder):
+    def __init__(self):
         HTMLParser.__init__(self)
-        self.folder = folder
         self.num_tests = 0
         self.testcase = None
         self.start_copy = False
@@ -49,10 +48,10 @@ class CodeforcesProblemParser(HTMLParser):
             if attrs == [('class', 'input')]:
                 self.num_tests += 1
                 self.testcase = open(
-                    '%s/%s%d' % (self.folder, SAMPLE_INPUT, self.num_tests), 'wb')
+                    '%s%d' % (SAMPLE_INPUT, self.num_tests), 'wb')
             elif attrs == [('class', 'output')]:
                 self.testcase = open(
-                    '%s/%s%d' % (self.folder, SAMPLE_OUTPUT, self.num_tests), 'wb')
+                    '%s%d' % (SAMPLE_OUTPUT, self.num_tests), 'wb')
         elif tag == 'pre':
             if self.testcase != None:
                 self.start_copy = True
@@ -122,7 +121,7 @@ class CodeforcesContestParser(HTMLParser):
 def parse_problem(folder, contest, problem):
     url = 'http://codeforces.com/contest/%s/problem/%s' % (contest, problem)
     html = urlopen(url).read()
-    parser = CodeforcesProblemParser(folder)
+    parser = CodeforcesProblemParser()
     parser.feed(html.decode('utf-8'))
     # .encode('utf-8') Should fix special chars problems?
     return parser.num_tests
@@ -156,7 +155,7 @@ def main():
         #folder = '%s/%s/' % (contest, problem)
         #call(['mkdir', '-p', folder])
         #call(['cp', '-n', TEMPLATE, '%s/%s.%s' % (folder, problem, TEMPLATE.split('.')[1])])
-        num_tests = parse_problem(folder, contest, problem)
+        num_tests = parse_problem(contest, problem)
         print('%d sample test(s) found.' % num_tests)
         print ('========================================')
 
